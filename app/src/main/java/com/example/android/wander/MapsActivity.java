@@ -28,8 +28,11 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.util.Locale;
+
 public class MapsActivity extends AppCompatActivity implements
         OnMapReadyCallback {
+
     private GoogleMap mMap;
 
     @Override
@@ -74,23 +77,41 @@ public class MapsActivity extends AppCompatActivity implements
 
 
     /**
-     * Manipulates the map once available.
      * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the
-     * camera. In this case, we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be
-     * prompted to install it inside the MapFragment. This method will only be
-     * triggered once the user has installed Google Play services and returned
-     * to the app.
+     * @param googleMap The GoogleMap object representing the Google Map.
      */
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-        // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions().position(sydney)
-                .title("Marker in Sydney"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+
+        // Pan the camera to your home address (in this case, Google HQ)
+        LatLng home = new LatLng(37.421982, -122.085109);
+        float zoom = 12f;
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(home, zoom));
+
+        setMapLongClick(mMap);
+    }
+
+    /**
+     * Add a Marker to the map when the user performs a long click on it.
+     * @param map The GoogleMap to set the listener to.
+     */
+    private void setMapLongClick(final GoogleMap map){
+        // Add a Marker to the map when the user performs a long click on it.
+        map.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
+            @Override
+            public void onMapLongClick(LatLng latLng) {
+                String snippet = String.format(Locale.getDefault(),
+                        getString(R.string.lat_long_snippet),
+                        latLng.latitude,
+                        latLng.longitude);
+
+                map.addMarker(new MarkerOptions()
+                        .position(latLng)
+                        .title(getString(R.string.dropped_pin))
+                        .snippet(snippet));
+            }
+        });
     }
 }
