@@ -26,7 +26,9 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PointOfInterest;
 
 import java.util.Locale;
 
@@ -91,6 +93,7 @@ public class MapsActivity extends AppCompatActivity implements
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(home, zoom));
 
         setMapLongClick(mMap);
+        setPoiClick(mMap);
     }
 
     /**
@@ -111,6 +114,23 @@ public class MapsActivity extends AppCompatActivity implements
                         .position(latLng)
                         .title(getString(R.string.dropped_pin))
                         .snippet(snippet));
+            }
+        });
+    }
+
+    /**
+     * Add marker when a place of interest (POI) is clicked with the name of the
+     * POI and immediately show the info window.
+     * @param map The GoogleMap to set the listener to.
+     */
+    private void setPoiClick(final GoogleMap map){
+        map.setOnPoiClickListener(new GoogleMap.OnPoiClickListener() {
+            @Override
+            public void onPoiClick(PointOfInterest poi) {
+                Marker poiMarker = map.addMarker(new MarkerOptions()
+                        .position(poi.latLng)
+                        .title(poi.name));
+                poiMarker.showInfoWindow();
             }
         });
     }
