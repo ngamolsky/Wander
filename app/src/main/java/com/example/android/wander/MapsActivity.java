@@ -15,8 +15,10 @@
  */
 package com.example.android.wander;
 
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -27,6 +29,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PointOfInterest;
 
@@ -35,6 +38,7 @@ import java.util.Locale;
 public class MapsActivity extends AppCompatActivity implements
         OnMapReadyCallback {
 
+    private static final String TAG = MapsActivity.class.getSimpleName();
     private GoogleMap mMap;
 
     @Override
@@ -94,6 +98,7 @@ public class MapsActivity extends AppCompatActivity implements
 
         setMapLongClick(mMap);
         setPoiClick(mMap);
+        setMapStyle(mMap);
     }
 
     /**
@@ -133,5 +138,26 @@ public class MapsActivity extends AppCompatActivity implements
                 poiMarker.showInfoWindow();
             }
         });
+    }
+
+    /**
+     * Load a style from the map_style.json file to style the Google Map. Log
+     * the errors.
+     * @param map The GoogleMap to style.
+     */
+    private void setMapStyle(GoogleMap map){
+        try {
+            // Customise the styling of the base map using a JSON object defined
+            // in a raw resource file.
+            boolean success = map.setMapStyle(
+                    MapStyleOptions.loadRawResourceStyle(
+                            this, R.raw.map_style));
+
+            if (!success) {
+                Log.e(TAG, "Style parsing failed.");
+            }
+        } catch (Resources.NotFoundException e) {
+            Log.e(TAG, "Can't find style. Error: ", e);
+        }
     }
 }
