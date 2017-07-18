@@ -27,10 +27,13 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.OnStreetViewPanoramaReadyCallback;
+import com.google.android.gms.maps.StreetViewPanorama;
 import com.google.android.gms.maps.StreetViewPanoramaOptions;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.SupportStreetViewPanoramaFragment;
@@ -41,11 +44,13 @@ import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PointOfInterest;
+import com.google.android.gms.maps.model.StreetViewPanoramaLocation;
 
 import java.util.Locale;
 
 public class MapsActivity extends AppCompatActivity implements
-        OnMapReadyCallback {
+        OnMapReadyCallback,
+        OnStreetViewPanoramaReadyCallback {
 
     private static final String TAG = MapsActivity.class.getSimpleName();
 
@@ -121,6 +126,33 @@ public class MapsActivity extends AppCompatActivity implements
         // Enable going into StreetView by clicking on an InfoWindow from a
         // point of interest.
         setInfoWindowClickToPanorama(mMap);
+    }
+
+    @Override
+    public void onStreetViewPanoramaReady(
+            StreetViewPanorama streetViewPanorama) {
+        // Show a toast and reset the map if no Street View is available.
+        streetViewPanorama.setOnStreetViewPanoramaChangeListener(
+                new StreetViewPanorama.OnStreetViewPanoramaChangeListener() {
+                    @Override
+                    public void onStreetViewPanoramaChange(
+                            StreetViewPanoramaLocation
+                                    streetViewPanoramaLocation) {
+                        if (streetViewPanoramaLocation == null
+                                || streetViewPanoramaLocation.links == null) {
+                            Toast.makeText(MapsActivity.this,
+                                    R.string.no_pano,
+                                    Toast.LENGTH_SHORT).show();
+                            SupportMapFragment mapFragment =
+                                    SupportMapFragment.newInstance();
+                            getSupportFragmentManager().beginTransaction()
+                                    .replace(R.id.fragment_container,
+                                            mapFragment).commit();
+
+                            mapFragment.getMapAsync(MapsActivity.this);
+                        }
+                    }
+                });
     }
 
     /**
@@ -234,6 +266,9 @@ public class MapsActivity extends AppCompatActivity implements
                                     .replace(R.id.fragment_container,
                                             streetViewFragment)
                                     .addToBackStack(null).commit();
+
+                            streetViewFragment.getStreetViewPanoramaAsync
+                                    (MapsActivity.this);
                         }
                     }
                 });
