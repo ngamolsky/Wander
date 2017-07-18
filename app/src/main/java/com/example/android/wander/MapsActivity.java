@@ -28,6 +28,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.GroundOverlayOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
@@ -49,8 +50,9 @@ public class MapsActivity extends AppCompatActivity implements
 
         // Obtain the SupportMapFragment and get notified when the map is ready
         // to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment)
-                getSupportFragmentManager().findFragmentById(R.id.map);
+        SupportMapFragment mapFragment = SupportMapFragment.newInstance();
+        getSupportFragmentManager().beginTransaction()
+                .add(R.id.fragment_container, mapFragment).commit();
         mapFragment.getMapAsync(this);
     }
 
@@ -85,6 +87,7 @@ public class MapsActivity extends AppCompatActivity implements
 
     /**
      * This callback is triggered when the map is ready to be used.
+     *
      * @param googleMap The GoogleMap object representing the Google Map.
      */
     @Override
@@ -97,16 +100,25 @@ public class MapsActivity extends AppCompatActivity implements
         float zoom = 12f;
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(home, zoom));
 
+        // Add a ground overlay 100 meters in width to the home location
+        GroundOverlayOptions homeOverlay = new GroundOverlayOptions()
+                .image(BitmapDescriptorFactory.fromResource(R.drawable.android))
+                .position(home, 100);
+
+        mMap.addGroundOverlay(homeOverlay);
+
         setMapLongClick(mMap);
         setPoiClick(mMap);
         setMapStyle(mMap);
     }
 
+
     /**
      * Add a Marker to the map when the user performs a long click on it.
+     *
      * @param map The GoogleMap to set the listener to.
      */
-    private void setMapLongClick(final GoogleMap map){
+    private void setMapLongClick(final GoogleMap map) {
 
         // Add a blue Marker to the map when the user performs a long click.
         map.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
@@ -130,9 +142,10 @@ public class MapsActivity extends AppCompatActivity implements
     /**
      * Add marker when a place of interest (POI) is clicked with the name of the
      * POI and immediately show the info window.
+     *
      * @param map The GoogleMap to set the listener to.
      */
-    private void setPoiClick(final GoogleMap map){
+    private void setPoiClick(final GoogleMap map) {
         map.setOnPoiClickListener(new GoogleMap.OnPoiClickListener() {
             @Override
             public void onPoiClick(PointOfInterest poi) {
@@ -140,6 +153,7 @@ public class MapsActivity extends AppCompatActivity implements
                         .position(poi.latLng)
                         .title(poi.name));
                 poiMarker.showInfoWindow();
+                poiMarker.setTag("poi");
             }
         });
     }
@@ -147,9 +161,10 @@ public class MapsActivity extends AppCompatActivity implements
     /**
      * Load a style from the map_style.json file to style the Google Map. Log
      * the errors.
+     *
      * @param map The GoogleMap to style.
      */
-    private void setMapStyle(GoogleMap map){
+    private void setMapStyle(GoogleMap map) {
         try {
             // Customise the styling of the base map using a JSON object defined
             // in a raw resource file.
