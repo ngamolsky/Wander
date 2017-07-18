@@ -15,8 +15,12 @@
  */
 package com.example.android.wander;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -41,6 +45,7 @@ public class MapsActivity extends AppCompatActivity implements
         OnMapReadyCallback {
 
     private static final String TAG = MapsActivity.class.getSimpleName();
+    private static final int REQUEST_LOCATION_PERMISSION = 1;
     private GoogleMap mMap;
 
     @Override
@@ -110,6 +115,7 @@ public class MapsActivity extends AppCompatActivity implements
         setMapLongClick(mMap);
         setPoiClick(mMap);
         setMapStyle(mMap);
+        enableMyLocation(mMap);
     }
 
 
@@ -153,7 +159,6 @@ public class MapsActivity extends AppCompatActivity implements
                         .position(poi.latLng)
                         .title(poi.name));
                 poiMarker.showInfoWindow();
-                poiMarker.setTag("poi");
             }
         });
     }
@@ -177,6 +182,22 @@ public class MapsActivity extends AppCompatActivity implements
             }
         } catch (Resources.NotFoundException e) {
             Log.e(TAG, "Can't find style. Error: ", e);
+        }
+    }
+
+    /**
+     * Check for location permissions, and request them if they are missing.
+     * Otherwise, enable the location layer.
+     */
+    private void enableMyLocation(GoogleMap map) {
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
+            map.setMyLocationEnabled(true);
+        } else {
+            ActivityCompat.requestPermissions(this, new String[]
+                            {Manifest.permission.ACCESS_FINE_LOCATION},
+                    REQUEST_LOCATION_PERMISSION);
         }
     }
 }
