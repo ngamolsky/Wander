@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.example.android.wander;
 
 import android.Manifest;
@@ -30,7 +31,9 @@ import android.view.MenuItem;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.StreetViewPanoramaOptions;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.SupportStreetViewPanoramaFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.GroundOverlayOptions;
 import com.google.android.gms.maps.model.LatLng;
@@ -45,7 +48,9 @@ public class MapsActivity extends AppCompatActivity implements
         OnMapReadyCallback {
 
     private static final String TAG = MapsActivity.class.getSimpleName();
+
     private static final int REQUEST_LOCATION_PERMISSION = 1;
+    public static final float INITIAL_ZOOM = 12f;
     private GoogleMap mMap;
 
     @Override
@@ -89,9 +94,8 @@ public class MapsActivity extends AppCompatActivity implements
         }
     }
 
-
     /**
-     * This callback is triggered when the map is ready to be used.
+     * Triggered when the map is ready to be used.
      *
      * @param googleMap The GoogleMap object representing the Google Map.
      */
@@ -99,34 +103,34 @@ public class MapsActivity extends AppCompatActivity implements
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-
-        // Pan the camera to your home address (in this case, Google HQ)
+        // Pan the camera to your home address (in this case, Google HQ).
         LatLng home = new LatLng(37.421982, -122.085109);
-        float zoom = 12f;
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(home, zoom));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(home, INITIAL_ZOOM));
 
-        // Add a ground overlay 100 meters in width to the home location
+        // Add a ground overlay 100 meters in width to the home location.
         GroundOverlayOptions homeOverlay = new GroundOverlayOptions()
                 .image(BitmapDescriptorFactory.fromResource(R.drawable.android))
                 .position(home, 100);
 
         mMap.addGroundOverlay(homeOverlay);
 
-        setMapLongClick(mMap);
-        setPoiClick(mMap);
-        setMapStyle(mMap);
-        enableMyLocation(mMap);
+        setMapLongClick(mMap); // Set a long click listener for the map;
+        setPoiClick(mMap); // Set a click listener for points of interest.
+        setMapStyle(mMap); // Set the custom map style.
+        enableMyLocation(mMap); // Enable location tracking.
+        // Enable going into StreetView by clicking on an InfoWindow from a
+        // point of interest.
+        setInfoWindowClickToPanorama(mMap);
     }
 
-
     /**
-     * Add a Marker to the map when the user performs a long click on it.
+     * Adds a blue marker to the map when the user long clicks on it.
      *
-     * @param map The GoogleMap to set the listener to.
+     * @param map The GoogleMap to attach the listener to.
      */
     private void setMapLongClick(final GoogleMap map) {
 
-        // Add a blue Marker to the map when the user performs a long click.
+        // Add a blue marker to the map when the user performs a long click.
         map.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
             @Override
             public void onMapLongClick(LatLng latLng) {
@@ -146,10 +150,10 @@ public class MapsActivity extends AppCompatActivity implements
     }
 
     /**
-     * Add marker when a place of interest (POI) is clicked with the name of the
-     * POI and immediately show the info window.
+     * Adds a marker when a place of interest (POI) is clicked with the name of
+     * the POI and immediately shows the info window.
      *
-     * @param map The GoogleMap to set the listener to.
+     * @param map The GoogleMap to attach the listener to.
      */
     private void setPoiClick(final GoogleMap map) {
         map.setOnPoiClickListener(new GoogleMap.OnPoiClickListener() {
@@ -159,15 +163,16 @@ public class MapsActivity extends AppCompatActivity implements
                         .position(poi.latLng)
                         .title(poi.name));
                 poiMarker.showInfoWindow();
+                poiMarker.setTag(getString(R.string.poi));
             }
         });
     }
 
     /**
-     * Load a style from the map_style.json file to style the Google Map. Log
-     * the errors.
+     * Loads a style from the map_style.json file to style the Google Map. Log
+     * the errors if the loading fails.
      *
-     * @param map The GoogleMap to style.
+     * @param map The GoogleMap object to style.
      */
     private void setMapStyle(GoogleMap map) {
         try {
@@ -186,8 +191,8 @@ public class MapsActivity extends AppCompatActivity implements
     }
 
     /**
-     * Check for location permissions, and request them if they are missing.
-     * Otherwise, enable the location layer.
+     * Checks for location permissions, and requests them if they are missing.
+     * Otherwise, enables the location layer.
      */
     private void enableMyLocation(GoogleMap map) {
         if (ContextCompat.checkSelfPermission(this,
@@ -199,5 +204,38 @@ public class MapsActivity extends AppCompatActivity implements
                             {Manifest.permission.ACCESS_FINE_LOCATION},
                     REQUEST_LOCATION_PERMISSION);
         }
+    }
+
+    /**
+     * Starts a Street View panorama when an info window containing the poi tag
+     * is clicked.
+     *
+     * @param map The GoogleMap to set the listener to.
+     */
+    private void setInfoWindowClickToPanorama(GoogleMap map) {
+        map.setOnInfoWindowClickListener(
+                new GoogleMap.OnInfoWindowClickListener() {
+                    @Override
+                    public void onInfoWindowClick(Marker marker) {
+                        // Check the tag
+                        if (marker.getTag() == "poi") {
+
+                            // Set the position to the position of the marker
+                            StreetViewPanoramaOptions options =
+                                    new StreetViewPanoramaOptions().position(
+                                            marker.getPosition());
+
+                            SupportStreetViewPanoramaFragment streetViewFragment
+                                    = SupportStreetViewPanoramaFragment
+                                    .newInstance(options);
+
+                            // Replace the fragment and add it to the backstack
+                            getSupportFragmentManager().beginTransaction()
+                                    .replace(R.id.fragment_container,
+                                            streetViewFragment)
+                                    .addToBackStack(null).commit();
+                        }
+                    }
+                });
     }
 }

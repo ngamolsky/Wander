@@ -1,13 +1,13 @@
 Wander - Solution Code
-============
+======================
 
-Solution code for the Wander app, which is a custom styled Google Map with
-Street View enabled for Places of Interest, multiple map types and Location
+Solution code for the Wander app, which is a custom-styled Google Map with
+Street View enabled for Places of Interest, multiple map types, and location
 tracking.
 
 Introduction
 ------------
-This app is a sample for teaching Google Maps for Android. In order to use,
+This app is a sample for teaching Google Maps for Android. In order to use it,
 you must obtain a key from the [Google Developer Console](https://console.developers.google.com).
 
 Pre-requisites
@@ -21,8 +21,8 @@ You should be familiar with:
 Getting Started
 ---------------
 1. Download the code.
-2. Obtain a Android restricted API key by visiting the link in the
-google_maps_api.xml file.
+2. Obtain an API key for Google Maps restricted to Android apps by visiting the
+link in the google_maps_api.xml file included in the sample.
 3. Replace the `YOUR_KEY_HERE` string with your API key in the appropriate
 google_maps_api.xml file (debug or release).
 4. Open the code in Android Studio.
